@@ -35,5 +35,6 @@ app.use('/acc', accountRoutes);
 app.use('/pi', piRoutes);
 app.use('/book',bookingRoutes);
 app.use('/store',articlesRoutes);
+app.use('/web',webRoutes);
 
 module.exports = app;
