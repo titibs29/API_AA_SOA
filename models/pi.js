@@ -7,7 +7,8 @@ const piSchema = mongoose.Schema(
         y: {type: double, required: true},
         desc_fr: {type: String, required: true},
         desc_en: {type: String, required: false},
-        video: {type: String, required: false}
+        video: {type: String, required: false},
+        artisan: {type: String, required: false}
     }
 );
 
