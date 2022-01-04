@@ -5,7 +5,7 @@ const accountSchema = mongoose.Schema(
     {
         name: {type: String, required: true},
         password: {type: String, required: true},
-        role: {type: Int32, required: true},
+        role: {type: Number, required: true},
         birthday: {type: Date, required: false}
     }
 );
