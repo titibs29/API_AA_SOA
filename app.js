@@ -37,4 +37,10 @@ app.use('/book',bookingRoutes);
 app.use('/store',articlesRoutes);
 app.use('/web',webRoutes);
 
+// chemin par défaut
+app.get('/', (req,res,next) => {
+  console.log('connexion à la page d\'acceuil');
+  res.sendStatus(403);
+});
+
 module.exports = app;
