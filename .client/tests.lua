@@ -19,7 +19,7 @@ function connect(url)
 end
 
 function createAccount(url, name, password)
-    urlString = url.."/acc/signin"
+    local urlString = url.."/acc/signin"
     local req = json.encode({name = name, password = password})
     local res = {}
     local result, statuscode, headers, statustext = http.request {
@@ -33,10 +33,43 @@ function createAccount(url, name, password)
         sink = ltn12.sink.table(res)
     }
 
-    body = table.concat(res)
-    print('resultats de la creation:')
-    print('body '..tostring(body))
+    body = json.decode(table.concat(res))
+    local clientId = 'nil'
+
+    if statuscode == 201 then
+        clientId = body.message
+    end
+  
+    return statuscode, clientId
+end
+
+function modifyAccount()
+
+end
+
+function deleteAccount(url, id)
+    if id == 'nil' then
+        error('client ID undefined')
+    else 
+
+    local urlString = url.."/acc/"..id
+    local req = ""
+    local res = {}
+
+    local result, statuscode, headers, statustext = http.request {
+        method = "DELETE",
+        url = urlString,
+        source = ltn12.source.string(req),
+        headers={
+            ["content-type"] = "application/json; charset=utf-8",
+            ["content-length"] = tostring(#req)
+        },
+        sink = ltn12.sink.table(res)
+    }
+
     return statuscode
+
+    end
 end
 
 
@@ -47,7 +80,7 @@ local lu = require('luaunit')
 TestAccount = {}
 
     function TestAccount:setUp()
-        local clientId = 0
+        local clientId = 'nil'
     end
 
     function TestAccount:test1()
@@ -56,8 +89,14 @@ TestAccount = {}
     end
 
     function TestAccount:test2()
-        result = createAccount(url, "luacreate", "luapassword" )
+        result, clientId = createAccount(url, "luacreate", "luapassword" )
+        print(clientId)
         lu.assertEquals( result, 201)
+    end
+
+    function TestAccount:test3()
+        result, clientId = deleteAccount(url, clientId)
+        lu.assertEquals( result, 200)
     end
 
 

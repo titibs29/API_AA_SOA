@@ -7,17 +7,19 @@ const Account = require('../models/account');
 // login
 exports.login = (req, res, next) =>{
     console.log('login');
-    res.sendStatus(200);
+    
+
+    
 };
 
 //signin
 exports.signin = (req, res, next) => {
-    console.log('création du compte '+ req.body.name);
+    console.log('création du compte de '+ req.body.name);
     Account.findOne({ name: req.body.name })
         .then(user => {
             if(user){
-                console.log('utilisateur déjà existant')
-                res.status(400).json({ message: "utilisateur déjà existant" });
+                console.log('erreur: utilisateur déjà existant')
+                res.status(400).json({ message: "utilisateur deja existant" });
             }else{
                 bcrypt.hash(req.body.password, 10)
                     .then(hash => {
@@ -55,8 +57,19 @@ exports.modify = (req, res, next) =>{
 
 // supprime un compte
 exports.del = (req, res, next) =>{
-    console.log('supprime un compte');
-    res.sendStatus(200);
+    console.log('supprime un compte - securite à implementer');
+    if (1/* proprio ou admin*/) {
+        Account.findOne({ _id: req.params.id })
+            .then(account => {
+                Account.deleteOne({ _id: req.params.id })
+                    .then(() => res.status(200).json({ message: 'compte supprimé !' }))
+                    .catch(error => res.status(400).json({ error }));
+            })
+            .catch(error => res.status(500).json({ error }));
+    } else {
+        res.sendStatus(403);
+    }
+
 };
 
 // afficher tout les comptes
