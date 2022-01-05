@@ -1,3 +1,6 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
 const Account = require('../models/account');
 
 
@@ -10,7 +13,20 @@ exports.login = (req, res, next) =>{
 //signin
 exports.signin = (req, res, next) =>{
     console.log('signin');
-    res.sendStatus(200);
+
+    bcrypt.hash(req.body.password, 10)
+        .then(hash => {
+            const account = new Account({
+                name: req.body.name,
+                password: hash,
+                role: 2,
+                birthday: req.body.birthday
+            });
+            account.save()
+                .then(() => res.status(201).json({ message: 'utilisateur créé !'}))
+                .catch(error => res.status(400).json({ error }));
+        })
+        .catch(error => res.status(500).json({ error }));
 };
 
 // affiche un seul compte

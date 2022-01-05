@@ -6,6 +6,7 @@ package.cpath = package.cpath..';./client_lua/libs/socket/?.dll;./libs/mime/?.dl
 local http=require 'socket.http'
 local mime = require 'mime'
 local ltn12 = require 'ltn12'
+local luaunit = require 'luaunit'
 --#endregion
 
 function connectTest(url)
@@ -41,7 +42,7 @@ function createAccount(urlString, username, userfirstname, password, age, role)
     return res
 end
 
-local url = 'http://localhost:3300' --url a appeler
+local url = 'http://localhost:3000' --url a appeler
 
 
 --[[ code de base
