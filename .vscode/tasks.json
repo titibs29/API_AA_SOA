@@ -6,7 +6,7 @@
         {
             "label": "run lua",
             "type": "shell",
-            "command": "lua5.1",
+            "command": "./.client/libs/lua5.1",
             "args":[
                 "${file}"
             ],
