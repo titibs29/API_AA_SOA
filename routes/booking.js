@@ -2,8 +2,6 @@ const express = require('express');
 
 const router = express.Router();
 
-const authProp = require('../middleware/authProp');
-
 const bookingCtrl = require('../controllers/booking');
 
 // affiche les réservations associées a ID

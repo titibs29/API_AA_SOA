@@ -1,5 +1,7 @@
 const Pi = require('../models/pi');
 
+const auth = require('../middleware/auth');
+
 // affiche un pi
 exports.showOne = (req, res, next) =>{
     console.log('affiche un pi');

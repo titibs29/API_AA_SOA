@@ -1,5 +1,7 @@
 const Article = require('../models/article');
 
+const auth = require('../middleware/auth');
+
 // afficher un article
 exports.showOne = (req, res, next) =>{
     console.log('affiche un article');

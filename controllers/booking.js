@@ -1,6 +1,8 @@
 const Booking = require('../models/booking');
 const AccBook = require('../models/acc-book');
 
+const auth = require('../middleware/auth');
+
 // affiche les réservations associées a ID
 exports.showByAcc = (req, res, next) =>{
     console.log('montre toute les réservations associées à un compte');
