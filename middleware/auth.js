@@ -6,84 +6,83 @@ const Pi = require('../models/pi');
 
 exports.isProp = (token, idToTest) => {
 
-    let IsProp = false
+
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
-    if (idToTest && idToTest !== userId) {
-        IsProp = false
+    if (userId && idToTest == userId) {
+
+        return true
     } else {
-        IsProp = true
+        return false
     };
-    return IsProp
 }
 
 
-exports.isAdmin = (token, idAdmin) => {
+exports.isAdmin = async (token) => {
 
-    let IsAdmin = false
-    let erreur = ''
+
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
 
-    Account.findOne({ _id: userId })
-    .then(account => {
-        if(!account) {
-            IsAdmin = false;
-            erreur = "le compte n'existe pas"
-            return IsAdmin, erreur
-        } else {
-            if (userId == idAdmin) {
-                if (account.role == 0) {
-                    IsAdmin = true;
-                };
-            };
-        };
-    })
-    .catch(error => erreur = error);
+    return new Promise((resolve, reject) => {
+        Account.findOne({ _id: userId })
+            .then(account => {
+                if (account) {
+                    if (account.role == 0) {
+                        
+                        resolve(true);
 
-    return IsAdmin, erreur
+                    } else {
+                        resolve(false);
+                    }
+                } else {
+
+                    resolve(false);
+                };
+            });
+    });
 }
 
-exports.isPropArtisan = (token, idPi) => {
 
-    let isArtProp = false
-    let erreur = ''
+exports.isPropArtisan = async (res, token, idPi) => {
+
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
-    Account.findOne({ _id: userId })
-    .then(account => {
-        if(!account) {
-            IsartProp = false;
-            erreur = "le compte n'existe pas"
-            return isArtProp, erreur
 
-        } else {
-                if (account.role == 1) {
-                   
-                    Pi.findOne({ artisan: userId})
-                    .then(pi => {
-                        if(!pi){
-                            IsartProp = false;
-                            erreur = 'aucun Pi associé'
-                            return isArtProp, erreur
-                        } else {
+    return new Promise((resolve, reject) => {
+        Account.findOne({ _id: userId })
+            .then(account => {
+                if (!account) {
+                    resolve(false);
+                } else {
+                    if (account.role == 1) {
 
-                            if(pi.id == idPi){
-                                isArtProp = true
-                            }
-                        }
+                        Pi.findOne({ artisan: userId })
+                            .then(pi => {
+                                if (!pi) {
+                                    resolve(false);
+                                } else {
 
-                    })
-                    .catch(error => erreur = error);
+                                    if (pi.id == idPi) {
+                                        resolve(true);
+                                    } else {
+                                        resolve(false);
+                                    }
+                                }
 
+                            })
+                            .catch(error =>  reject(error));
 
 
 
+
+                    } else {
+                        resolve(false);
+                    };
                 };
-        };
-    })
-    .catch(error => erreur = error);
+            })
+            .catch(error =>  reject(error));
 
-    return isArtProp, erreur
-
+        return false
+    });
 }
