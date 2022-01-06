@@ -22,9 +22,9 @@ exports.login = (req, res, next) => {
                 if (!ret) return res.status(401).json({ error: 'mot de passe incorrect !' });
 
                 res.status(200).json({
-                    userId: account._id,
+                    id: account._id,
                     token: jwt.sign(
-                        { userId: account._id },
+                        { id: account._id },
                         'RANDOM_TOKEN_SECRET',
                         { expiresIn: '24h' }
                     )
@@ -51,13 +51,12 @@ exports.signin = (req, res, next) => {
                         const account = new Account({
                             name: req.body.name,
                             password: hash,
-                            role: 2,
-                            birthday: req.body.birthday
+                            role: 2
                         });
                         account.save()
                             .then(() => {
                                 Account.findOne({ name: req.body.name })
-                                    .then(user => res.status(201).json({ userId: user._id }))
+                                    .then(account => res.status(201).json({ id: account._id }))
                                     .catch(error => res.status(500).json({ error }));
                             })
                             .catch(error => res.status(400).json({ error }));
@@ -138,7 +137,7 @@ exports.modify = (req, res, next) => {
 exports.del = (req, res, next) => {
     console.log('supprime un compte ');
 
-    if (!req.body.token || !req.body.userId) {
+    if (!req.body.token || !req.body.id) {
         res.status(403).json({ message: 'informations manquantes !' });
     }
     const token = req.body.token;
