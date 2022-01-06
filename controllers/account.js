@@ -3,6 +3,7 @@ const { promise } = require('bcrypt/promises');
 const jwt = require('jsonwebtoken');
 
 const auth = require('../middleware/auth');
+const account = require('../models/account');
 
 const Account = require('../models/account');
 
@@ -69,20 +70,23 @@ exports.signin = (req, res, next) => {
 };
 
 // affiche un seul compte
-exports.showOne = async (req, res, next) => {
+exports.showOne =  (req, res, next) => {
     console.log('montre un compte');
     const token = req.body.token;
     const id = req.params.id;
     const proprio = auth.isProp(token, id);
-    const admin = await auth.isAdmin(token);
-    if (proprio || admin) {
-        Account.findOne({ _id: req.params.id })
-            .then(account => res.status(200).json(account))
-            .catch(error => res.status(404).json({ error }));
-    } else {
+    auth.isAdmin(token)
+        .then(admin => {
+            if (proprio || admin) {
+                Account.findOne({ _id: req.params.id })
+                    .then(account => res.status(200).json(account))
+                    .catch(error => res.status(404).json({ error }));
+            } else {
 
-        res.sendStatus(403);
-    }
+                res.sendStatus(403);
+            }
+        })
+        .catch(error => res.status(500).json({ error }));
 };
 
 //modifie un compte
@@ -91,7 +95,26 @@ exports.modify = (req, res, next) => {
     const token = req.body.token;
     const id = req.params.id;
     const proprio = auth.isProp(token, id);
-    const admin = auth.isAdmin(token);
+    auth.isAdmin(token)
+    .then(admin => {
+        if(proprio && !admin){ 
+            delete req.body.role;
+        }
+        if(proprio || admin){
+
+            delete req.body.token;
+            account.updateOne({ _id: req.params.id}, {...req.body, _id: req.params.id})
+            .then(() => res.status(200).json({ message: 'Objet modifié !'}))
+            .catch(error => res.status(400).json({ error }));
+
+
+        } else{
+
+        res.sendStatus(403)
+
+        };
+    })
+    .catch(error => res.status(500).json({ error }))
 
     
 
@@ -101,7 +124,7 @@ exports.modify = (req, res, next) => {
 };
 
 // supprime un compte
-exports.del = async (req, res, next) => {
+exports.del = (req, res, next) => {
     console.log('supprime un compte ');
 
     if (!req.body.token || !req.body.userId) {
@@ -111,33 +134,44 @@ exports.del = async (req, res, next) => {
     const idToDel = req.params.id;
 
     const proprio = auth.isProp(token, idToDel)
-    const admin = await auth.isAdmin(token)
-    
+    auth.isAdmin(token)
+        .then(admin => {
 
-    
-    if (admin || proprio) {
-        
-        Account.findOne({ _id: idToDel })
-        .then(account => {
-            if (!account) {
-                res.status(400).json({ message: "le compte n'existe pas" });
+            if (admin || proprio) {
+
+                Account.findOne({ _id: idToDel })
+                    .then(account => {
+                        if (!account) {
+                            res.status(400).json({ message: "le compte n'existe pas" });
+                        } else {
+                            Account.deleteOne({ _id: req.params.id })
+                                .then(() => res.status(200).json({ message: 'compte supprimé !' }))
+                                .catch(error => res.status(400).json({ error }));
+                        };
+                    })
+                    .catch(error => res.status(500).json({ error }));
+
             } else {
-                Account.deleteOne({ _id: req.params.id })
-                .then(() => res.status(200).json({ message: 'compte supprimé !' }))
-                .catch(error => res.status(400).json({ error }));
+
+                res.sendStatus(403);
             };
         })
         .catch(error => res.status(500).json({ error }));
-        
-    } else {
-        
-        res.sendStatus(403);
-    };
-    
+
 };
 
 // afficher tout les comptes
 exports.showAll = (req, res, next) => {
     console.log('montre tout les comptes');
-    res.sendStatus(200);
+    auth.isAdmin(req.body.token)
+        .then(admin => {
+            if (admin) {
+                Account.find()
+                    .then(accounts => res.status(200).json(accounts))
+                    .catch(error => res.status(400).json({ error }));
+            } else {
+                res.sendStatus(403);
+            }
+        })
+        .catch(error => res.status(500).json({ error }))
 };
