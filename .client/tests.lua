@@ -19,10 +19,9 @@ function connect(url)
     return statuscode
 end
 
-Account = {}
 
     -- creer un compte
-    function create(url, name, password)
+    function acc_create(url, name, password)
         local urlString = url.."/acc/signin"
         local req = json.encode({name = name, password = password})
         local res = {}
@@ -49,7 +48,7 @@ Account = {}
     end
 
     -- login
-    function login(url, name, password)
+    function acc_login(url, name, password)
         local urlString = url.."/acc/login"
         local req = json.encode({name = name, password = password})
         local res = {}
@@ -81,28 +80,56 @@ Account = {}
     end
 
     --afficher un compte
-    function showOne()
-        
+    function acc_showOne(url, tokenSess, idToShow)
+        local urlString = url.."/acc/"..idToShow
+
+        local req = json.encode({token = tokenSess})
+        local res = {}
+        local name = ''
+
+        local result, statuscode, headers, statustext = http.request {
+            method = "GET",
+            url = urlString,
+            source = ltn12.source.string(req),
+            headers={
+                ["content-type"] = "application/json; charset=utf-8",
+                ["content-length"] = tostring(#req)
+            },
+            sink = ltn12.sink.table(res)
+        }
+
+        if statuscode == 200 then
+        body = json.decode(table.concat(res))
+        name = body.name
+        end
+
+        return statuscode, name
     end
 
     --afficher tout les comptes
-    function showAll()
+    function acc_showAll()
         
     end
 
     -- modifier un compte
-    function modify()
+    function acc_modify()
 
     end
 
     -- supprimer le compte
-    function del(url, id)
-        if id == 'nil' then
-            error('client ID undefined')
-        else 
+    function acc_del(url, idToDel, tokenSess, idSess)
+        if idToDel == 'nil' then
+            error('id du compte à supprimer non fournie')
 
-        local urlString = url.."/acc/"..id
-        local req = ""
+        elseif tokenSess == 'nil' then
+            error('token null')
+
+        elseif idSess == 'nil' then
+            error('id du compte actif non fournie')
+        else
+
+        local urlString = url.."/acc/"..idToDel
+        local req = json.encode({token = tokenSess, userId = idSess})
         local res = {}
 
         local result, statuscode, headers, statustext = http.request {
@@ -125,32 +152,80 @@ Account = {}
 --[[ début de la zone de test ]]
 local lu = require('luaunit')
 
-TestAccount = {}
+Begin = {}
 
-    function TestAccount:setUp()
-        local clientId = 'nil'
-        local actualId = 'nil'
-        local token = 'nil'
-    end
-
-    function TestAccount:test1()
+    -- simple test de connexion
+    function Begin:test1()
         result = connect(url)
         lu.assertEquals(result, 403)
     end
 
+TestAccount = {}
+
+    function TestAccount:setUp()
+        local actualId = 'nil'
+        local clientId1 = 'nil'
+        local clientId2 = 'nil'
+        local adminId = 'nil'
+        local tokenSess1 = 'nil'
+        local tokenSess2 = 'nil'
+        local tokenSessAdmin = 'nil'
+    end
+
+    -- création d'un compte client
+    function TestAccount:test1a()
+        one, clientId1 = acc_create(url, "luacreate", "luapassword" )
+        lu.skipIf(one == 400, "le compte existe")
+        lu.assertEquals( one, 201)
+        
+    end
+    -- création d'un secon compte client
+    function TestAccount:test1b()
+        two, clientId2 = acc_create(url, "luasecond", "secondpass")
+        lu.skipIf(two == 400, "le compte existe")
+        lu.assertEquals( two, 201)
+        
+    end
+
+    -- creation de 3 sessions dont une admin
     function TestAccount:test2()
-        result, clientId = Account:create(url, "luacreate", "luapassword" )
-        lu.assertEquals( result, 201)
+        one, adminId, tokenSessAdmin = acc_login(url, "admin", "admin" )
+        two, clientId1, tokenSess1 = acc_login(url, "luacreate", "luapassword" )
+        tree, clientId2, tokenSess2 = acc_login(url, "luasecond", "secondpass" )
+        lu.assertEquals( one, 200)
+        lu.assertEquals( two, 200)
+        lu.assertEquals( tree, 200)
     end
 
+    -- test de suppression d'un compte client par un autre client (403 attendu)
     function TestAccount:test3()
-        result, actualId, token = Account:login(url, "admin", "admin" )
-        lu.assertEquals( result, 200)
+        
+        one = acc_del(url, clientId2, tokenSess1, clientId1)
+        lu.assertEquals(one, 403)
+        
+        
     end
 
+    -- récupère le nom de l'utilisateur
     function TestAccount:test4()
-        result= Account:del(url, clientId)
-        lu.assertEquals( result, 200)
+
+        one, name = acc_showOne(url, tokenSess1, clientId1)
+        lu.assertEquals(one, 200)
+        lu.assertEquals(name, "luacreate")
+        
+    end
+
+    -- suppression des deux comptes clients créés
+    function TestAccount:test9a()
+
+        one= acc_del(url, clientId1, tokenSess1, clientId1) -- suppression par proprio
+        lu.assertEquals(one, 200)
+    end
+
+    function TestAccount:test9b()
+
+        two= acc_del(url, clientId2, tokenSessAdmin, adminId) --suppression par admin
+        lu.assertEquals(two, 200)
     end
 
 

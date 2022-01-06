@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { promise } = require('bcrypt/promises');
 const jwt = require('jsonwebtoken');
 
 const auth = require('../middleware/auth');
@@ -8,7 +9,7 @@ const Account = require('../models/account');
 
 // login
 exports.login = (req, res, next) => {
-    console.log('login');
+    console.log('login de', req.body.name);
 
     Account.findOne({ name: req.body.name })
         .then(account => {
@@ -68,32 +69,71 @@ exports.signin = (req, res, next) => {
 };
 
 // affiche un seul compte
-exports.showOne = (req, res, next) => {
+exports.showOne = async (req, res, next) => {
     console.log('montre un compte');
-    res.sendStatus(200);
+    const token = req.body.token;
+    const id = req.params.id;
+    const proprio = auth.isProp(token, id);
+    const admin = await auth.isAdmin(token);
+    if (proprio || admin) {
+        Account.findOne({ _id: req.params.id })
+            .then(account => res.status(200).json(account))
+            .catch(error => res.status(404).json({ error }));
+    } else {
+
+        res.sendStatus(403);
+    }
 };
 
 //modifie un compte
 exports.modify = (req, res, next) => {
     console.log('modifie un compte');
-    res.sendStatus(200);
+    const token = req.body.token;
+    const id = req.params.id;
+    const proprio = auth.isProp(token, id);
+    const admin = auth.isAdmin(token);
+
+    
+
+
+
+
 };
 
 // supprime un compte
-exports.del = (req, res, next) => {
-    console.log('supprime un compte - securite à implementer');
-    if (1/* proprio ou admin*/) {
-        Account.findOne({ _id: req.params.id })
-            .then(account => {
-                Account.deleteOne({ _id: req.params.id })
-                    .then(() => res.status(200).json({ message: 'compte supprimé !' }))
-                    .catch(error => res.status(400).json({ error }));
-            })
-            .catch(error => res.status(500).json({ error }));
-    } else {
-        res.sendStatus(403);
-    }
+exports.del = async (req, res, next) => {
+    console.log('supprime un compte ');
 
+    if (!req.body.token || !req.body.userId) {
+        res.status(403).json({ message: 'informations manquantes !' });
+    }
+    const token = req.body.token;
+    const idToDel = req.params.id;
+
+    const proprio = auth.isProp(token, idToDel)
+    const admin = await auth.isAdmin(token)
+    
+
+    
+    if (admin || proprio) {
+        
+        Account.findOne({ _id: idToDel })
+        .then(account => {
+            if (!account) {
+                res.status(400).json({ message: "le compte n'existe pas" });
+            } else {
+                Account.deleteOne({ _id: req.params.id })
+                .then(() => res.status(200).json({ message: 'compte supprimé !' }))
+                .catch(error => res.status(400).json({ error }));
+            };
+        })
+        .catch(error => res.status(500).json({ error }));
+        
+    } else {
+        
+        res.sendStatus(403);
+    };
+    
 };
 
 // afficher tout les comptes
