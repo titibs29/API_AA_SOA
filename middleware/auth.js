@@ -7,6 +7,9 @@ const Pi = require('../models/pi');
 exports.isProp = (token, idToTest) => {
 
 
+    if (!token) {
+        return false
+    }
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const id = decodedToken.id;
     if (id && idToTest == id) {
@@ -20,16 +23,18 @@ exports.isProp = (token, idToTest) => {
 
 exports.isAdmin = async (token) => {
 
-
-    const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-    const id = decodedToken.id;
-
     return new Promise((resolve, reject) => {
+        if (!token) {
+            resolve(false)
+        }
+        const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+        const id = decodedToken.id;
+
         Account.findOne({ _id: id })
             .then(account => {
                 if (account) {
                     if (account.role == 0) {
-                        
+
                         resolve(true);
 
                     } else {
@@ -44,12 +49,15 @@ exports.isAdmin = async (token) => {
 }
 
 
-exports.isPropArtisan = async (res, token, idPi) => {
-
-    const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-    const id = decodedToken.id;
+exports.isPropArtisan = async (token, idPi) => {
 
     return new Promise((resolve, reject) => {
+        if (!token) {
+            resolve(false)
+        }
+        const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+        const id = decodedToken.id;
+
         Account.findOne({ _id: id })
             .then(account => {
                 if (!account) {
@@ -71,7 +79,7 @@ exports.isPropArtisan = async (res, token, idPi) => {
                                 }
 
                             })
-                            .catch(error =>  reject(error));
+                            .catch(error => reject(error));
 
 
 
@@ -81,7 +89,7 @@ exports.isPropArtisan = async (res, token, idPi) => {
                     };
                 };
             })
-            .catch(error =>  reject(error));
+            .catch(error => reject(error));
 
         return false
     });

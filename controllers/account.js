@@ -2,7 +2,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const auth = require('../middleware/auth');
-const account = require('../models/account');
 
 const Account = require('../models/account');
 
@@ -105,7 +104,7 @@ exports.modify = (req, res, next) => {
                         .then(hash => {
                             delete req.body.token;
                             delete req.body.password;
-                            account.updateOne({ _id: req.params.id }, { password: hash, _id: req.params.id, ...req.body })
+                            Account.updateOne({ _id: req.params.id }, { password: hash, _id: req.params.id, ...req.body })
                                 .then(() => res.status(200).json({ message: 'compte modifié !' }))
                                 .catch(error => res.status(400).json({ error }));
                         })
