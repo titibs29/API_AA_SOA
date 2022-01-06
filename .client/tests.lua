@@ -442,12 +442,31 @@ TestBooking = {}
         
     end
 
-    function TestBooking:test1()
+    -- creer une reservation
+    function TestBooking:test1a() -- par un client
         local status = nil;
-        status, bookId1 = booking.create(url,tokenSessAdmin,"2018-05-04T13:30",adminId,clientId1)
+        status, bookId1 = booking.create(url,tokenSess2,"2018-05-04T13:30",clientId2,clientId1)
         lu.skipIf(status == 400, "la reservation existe déjà")
         lu.assertEquals(status, 201)
     end
+    function TestBooking:test1b() -- sans session
+        local status = nil;
+        status = booking.create(url,nil,"2018-05-04T13:30",adminId,clientId1)
+        lu.assertEquals(status, 403)
+    end
+
+    -- afficher une réservation
+    function TestBooking:test2() -- par un client
+        local status = nil;
+        status = booking.showOne(url,tokenSess2, bookId1)
+        lu.assertEquals(status, 200)
+    end
+
+    -- afficher les réservations d'un compte
+
+    -- modifier une réservation
+
+    -- supprimer une réservation
 
 --#endregion
 

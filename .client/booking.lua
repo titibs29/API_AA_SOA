@@ -12,7 +12,32 @@ local book = {}
 
     -- affiche une réservation
     function book.showOne(url, tokenSess, idToShow)
-        
+        local urlString = url.."/book/"..idToShow
+        local req = json.encode({token = tokenSess})
+        local res = {};
+        local body = {};
+        local bookDate = nil;
+        local partList = nil;
+
+        local result, statuscode, headers, statustext = http.request {
+            method = "GET",
+            url = urlString,
+            source = ltn12.source.string(req),
+            headers={
+                ["content-type"] = "application/json; charset=utf-8",
+                ["content-length"] = tostring(#req)
+            },
+            sink = ltn12.sink.table(res)
+        }
+
+        if statuscode == 200 then
+            body = json.decode(table.concat(res))
+            bookDate = body.date
+            partList = body.participants
+        end 
+
+        return statuscode, bookDate, partList
+
     end
 
     -- crée une reservation

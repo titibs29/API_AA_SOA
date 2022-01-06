@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const AccBook = require('../models/acc-book');
 
 const Account = require('../models/account');
 const Pi = require('../models/pi');
@@ -108,6 +109,28 @@ exports.asAccount = async (token) => {
                 if (!account) {
                     resolve(false)
                 } else {
+                    resolve(true)
+                }
+            })
+            .catch(error => reject(error));
+    })
+}
+
+exports.bookProp = async (token, bookId) => {
+    return new Promise((resolve, reject) => {
+        if (!token) {
+            resolve(false)
+        }
+        const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+        const accId = decodedToken.id;
+        AccBook.findOne({ acc: accId, book: bookId })
+            .then(link => {
+                if (!link) {
+                    console.log("pas trouvé")
+                    resolve(false)
+                } else {
+                    console.log("existe")
+
                     resolve(true)
                 }
             })
