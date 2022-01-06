@@ -23,6 +23,8 @@ local tokenSess1 = 'nil';
 local tokenSess2 = 'nil';
 local tokenSessAdmin = 'nil';
 
+local articleId = 'nil'
+
 -- connexion
 function connect(url)
     local body, statuscode, headers, statustext = http.request(url)
@@ -135,7 +137,7 @@ TestAccount = {}
         local name = 'nil';
         local role = 3;
         status = acc.modify(url,tokenSessAdmin, clientId1, "newnametwo", "newPasstwo",1); -- par un admin
-        statusTwo, name, role = acc.showOne(url, tokenSess1, clientId1) -- on verifie
+        statusTwo, name, role = acc.showOne(url, tokenSess1, clientId1)
         lu.assertEquals(status, 200);
         lu.assertEquals(statusTwo, 200);
         lu.assertEquals(name, "newnametwo");
@@ -154,6 +156,141 @@ TestAccount = {}
         local status = 0;
         status = acc.showAll(url, tokenSessAdmin); -- avec un compte admin
         lu.assertEquals(status, 200);
+    end
+
+-- tests relatifs aux articles
+TestStore = {}
+
+    function TestStore:setup()
+
+    end
+
+    -- affiche tout le store
+    function TestStore:test1()
+        local status = 0;
+        status = store.showAll(url)
+        lu.assertEquals(status, 200)
+    end
+
+    -- creer un article
+    function TestStore:test2a()
+        local status = 0;
+        local badArticleId = 'nil';
+        status, badArticleId = store.create(
+            url,
+            tokenSess1,
+            "artByClient",
+            "cet article ne va pas se creer",
+            5.25
+        ) -- par un client
+
+        lu.assertEquals(status, 403)
+        lu.assertEquals(badArticleId, 'nil')
+    end
+    function TestStore:test2b()
+        local status = 0;
+        local thisArticleId = 'nil';
+        status, thisArticleId = store.create(
+            url,
+            tokenSessAdmin,
+            "articleValide",
+            "cet article est un article de test",
+            10.99
+        ) -- par un admin
+        articleId = thisArticleId
+        lu.skipIf(status == 400, "l'article existe déjà")
+        lu.assertEquals(status, 201)
+    end
+    function TestStore:test2c()
+        local status = 0;
+        status, articleId = store.create(
+            url,
+            tokenSessAdmin,
+            "articleValide",
+            "cet article exite déjà",
+            8.99
+        ) -- doublon par un admin
+
+        lu.assertEquals(status, 400) -- pas de doublon sur le nom
+    end
+
+    -- afficher un article
+    function TestStore:test3a()
+        local status = nil;
+        local name = 'nil';
+        local prix = 'nil';
+        status, name, prix = store.showOne(url, tokenSess1, articleId) -- par un client
+
+        lu.assertEquals(status, 403)
+        lu.assertEquals(name, 'nil')
+        lu.assertEquals(prix, 'nil')
+    end
+    function TestStore:test3b()
+        local status = nil;
+        local name = 'nil';
+        local prix = 'nil';
+        status, name, prix = store.showOne(url, tokenSessAdmin, articleId) -- par un admin
+
+        lu.assertEquals(status, 200)
+        lu.assertEquals(name, "articleValide")
+        lu.assertEquals(prix, 10.99)
+    end
+    function TestStore:test3c()
+        local status = nil;
+        local name = 'nil';
+        local prix = 'nil';
+        status, name, prix = store.showOne(url, tokenSessAdmin, 'fakeArticleId') -- un article qui n'existe pas
+
+        lu.assertEquals(status, 404)
+        lu.assertEquals(name, 'nil')
+        lu.assertEquals(prix, 'nil')
+    end
+
+    -- modifier un article
+    function TestStore:test4a()
+        local status = nil;
+        status = store.modify(url,tokenSess1,articleId,"nouvelArticle") -- par un client
+        lu.assertEquals(status, 403)
+    end
+    function TestStore:test4b()
+        local status = nil;
+        local statusTwo = nil;
+        local name = 'nil';
+        status = store.modify(url,tokenSessAdmin,articleId,"nouvelArticle") -- par un admin
+        statusTwo, name = store.showOne(url, tokenSessAdmin, articleId)
+        
+        lu.assertEquals(status, 200)
+        lu.assertEquals(statusTwo, 200)
+        lu.assertEquals(name, "nouvelArticle")
+    end
+    function TestStore:test4c()
+        local status = nil;
+        status = store.modify(url,tokenSessAdmin,'badArticleId',"nouvelArticle") -- un mauvais article
+        lu.assertEquals(status, 404)
+    end
+
+
+    -- supprimer un article
+    function TestStore:test5a()
+        local status = 0;
+
+        status = store.del(url, tokenSess1, articleId) -- par un client
+
+        lu.assertEquals(status, 403)
+    end
+    function TestStore:test5b()
+        local status = 0;
+
+        status = store.del(url, tokenSessAdmin, articleId) -- par un admin
+
+        lu.assertEquals(status, 200)
+    end
+    function TestStore:test5c()
+        local status = 0;
+
+        status = store.del(url, tokenSessAdmin, articleId) -- déjà supprimé
+
+        lu.assertEquals(status, 404)
     end
 
 

@@ -128,7 +128,7 @@ end
 
 -- modifier un compte
 function acc.modify(url,tokenSess, idToChange, newName, newPassword, newRole)
-    local modifyString = {token = tokenSess, id = idToChange};
+    local modifyString = {token = tokenSess};
     if newName then
         modifyString.name = newName;
     end
@@ -161,7 +161,7 @@ end
 -- supprimer le compte
 function acc.del(url, idToDel, tokenSess, idSess)
     if idToDel == 'nil' then
-        error('id du compte à supprimer non fournie')
+        error('id du compte a supprimer non fournie')
 
     elseif tokenSess == 'nil' then
         error('token null')

@@ -14,7 +14,7 @@ exports.login = (req, res, next) => {
     Account.findOne({ name: req.body.name })
         .then(account => {
             if (!account) {
-                return res.status(401).json({ error: 'utilisateur introuvable !' });
+                return res.status(404).json({ error: 'utilisateur introuvable !' });
             }
 
             bcrypt.compare(req.body.password, account.password, (err, ret) => {
@@ -104,7 +104,7 @@ exports.modify = (req, res, next) => {
                     bcrypt.hash(req.body.password, 10)
                         .then(hash => {
                             delete req.body.token;
-                            delete req.body.password
+                            delete req.body.password;
                             account.updateOne({ _id: req.params.id }, { password: hash, _id: req.params.id, ...req.body })
                                 .then(() => res.status(200).json({ message: 'compte modifié !' }))
                                 .catch(error => res.status(400).json({ error }));
@@ -152,7 +152,7 @@ exports.del = (req, res, next) => {
                 Account.findOne({ _id: idToDel })
                     .then(account => {
                         if (!account) {
-                            res.status(400).json({ message: "le compte n'existe pas" });
+                            res.status(404).json({ message: "le compte n'existe pas" });
                         } else {
                             Account.deleteOne({ _id: req.params.id })
                                 .then(() => res.status(200).json({ message: 'compte supprimé !' }))

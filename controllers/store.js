@@ -29,19 +29,28 @@ exports.create = (req, res, next) =>{
 
         if(admin){
 
-            delete req.body.token;
-            const article = new Article({ ...req.body });
-            article.save()
-            .then(() => {
-                Article.findOne({name: req.body.name})
-                .then(article => res.status(201).json({ message: article._id }))
-                .catch(error => res.status(500).json({ error }));
-            }).catch(error => {
-                res.status(400).json({ error: error });
-            });
-        } else {
-            res.sendStatus(403);
-        }
+            Article.findOne({ name: req.body.name})
+            .then(article => {
+                if(article){
+                    res.status(400).json({ message: article._id})
+                }else{
+
+                    delete req.body.token;
+                    const article = new Article({ ...req.body });
+                    article.save()
+                    .then(() => {
+                        Article.findOne({name: req.body.name})
+                        .then(article => res.status(201).json({ message: article._id }))
+                        .catch(error => res.status(500).json({ error }));
+                    }).catch(error => {
+                        res.status(400).json({ error: error });
+                    });
+                }
+            })
+            .catch(error => res.status(500).json({ error }));
+            } else {
+                res.sendStatus(403);
+            }
     })
     .catch(error => res.status(500).json({ error }))
 };
@@ -54,10 +63,19 @@ exports.modify = (req, res, next) =>{
         if(admin){
             delete req.body.token;
 
-            Article.updateOne({ _id: req.params.id}, { ...req.body, _id: req.params.id})
-                .then(article => res.status(200).json({ message: 'article modifié'}))
-                .catch(error => res.status(400).json({ error }));
+            Article.findOne({_id: req.params.id})
+            .then(article => {
+                if(!article){
 
+                    res.status(404).json({ message: 'article inexistant'})
+                }else{
+                    Article.updateOne({ _id: req.params.id}, { ...req.body, _id: req.params.id})
+                    .then(article => res.status(200).json({ message: 'article modifié'}))
+                    .catch(error => res.status(400).json({ error }));
+                }
+            })
+            .catch(error => res.status(500).json({ error }))
+                
         }else{
             res.sendStatus(403)
         }
@@ -75,7 +93,7 @@ exports.del = (req, res, next) =>{
             Article.findOne({ _id: req.params.id })
             .then(article => {
                 if(!article){
-                    res.status(400).json({ message: "l'article n'existe pas" })
+                    res.status(404).json({ message: "l'article n'existe pas" })
                 }else{
                     Article.deleteOne({ _id: req.params.id })
                     .then(() => res.status(200).json({ message: "compte supprimé" }))
