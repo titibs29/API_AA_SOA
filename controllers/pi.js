@@ -64,7 +64,6 @@ exports.modify = (req, res, next) => {
                             res.status(404).json({ message: 'point inexistant' })
                         } else {
                             delete req.body.token;
-                            console.log(req.params.id)
                                 Pi.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
                                     .then(pi => res.status(200).json({ message: 'point modifié' }))
                                     .catch(error => res.status(400).json({ error }));

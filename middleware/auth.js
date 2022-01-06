@@ -94,3 +94,23 @@ exports.isPropArtisan = async (token, idPi) => {
         return false
     });
 }
+
+exports.asAccount = async (token) => {
+
+    return new Promise((resolve, reject) => {
+        if (!token) {
+            resolve(false)
+        }
+        const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+        const id = decodedToken.id;
+        Account.findOne({ _id: id })
+            .then(account => {
+                if (!account) {
+                    resolve(false)
+                } else {
+                    resolve(true)
+                }
+            })
+            .catch(error => reject(error));
+    })
+}

@@ -438,10 +438,17 @@ TestPi = {}
 --#region booking
 TestBooking = {}
 
-    function TestbBooking:setup()
+    function TestBooking:setup()
         
     end
-    
+
+    function TestBooking:test1()
+        local status = nil;
+        status, bookId1 = booking.create(url,tokenSessAdmin,"2018-05-04T13:30",adminId,clientId1)
+        lu.skipIf(status == 400, "la reservation existe déjà")
+        lu.assertEquals(status, 201)
+    end
+
 --#endregion
 
 -- suppression de compte

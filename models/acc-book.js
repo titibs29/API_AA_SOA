@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const accBookSchema = mongoose.Schema(
     {
-        account: {type: String, required: true},
-        booking: {type: String, required:true}
+        acc: {type: String, required: true},
+        book: {type: String, required:true}
     }
 );
 
