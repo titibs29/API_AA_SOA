@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt');
-const { promise } = require('bcrypt/promises');
 const jwt = require('jsonwebtoken');
 
 const auth = require('../middleware/auth');
@@ -70,7 +69,7 @@ exports.signin = (req, res, next) => {
 };
 
 // affiche un seul compte
-exports.showOne =  (req, res, next) => {
+exports.showOne = (req, res, next) => {
     console.log('montre un compte');
     const token = req.body.token;
     const id = req.params.id;
@@ -96,27 +95,39 @@ exports.modify = (req, res, next) => {
     const id = req.params.id;
     const proprio = auth.isProp(token, id);
     auth.isAdmin(token)
-    .then(admin => {
-        if(proprio && !admin){ 
-            delete req.body.role;
-        }
-        if(proprio || admin){
+        .then(admin => {
+            if (proprio && !admin) {
+                delete req.body.role;
+            }
+            if (proprio || admin) {
 
-            delete req.body.token;
-            account.updateOne({ _id: req.params.id}, {...req.body, _id: req.params.id})
-            .then(() => res.status(200).json({ message: 'Objet modifié !'}))
-            .catch(error => res.status(400).json({ error }));
+                if (req.body.password) {
+                    bcrypt.hash(req.body.password, 10)
+                        .then(hash => {
+                            delete req.body.token;
+                            delete req.body.password
+                            account.updateOne({ _id: req.params.id }, { password: hash, _id: req.params.id, ...req.body })
+                                .then(() => res.status(200).json({ message: 'compte modifié !' }))
+                                .catch(error => res.status(400).json({ error }));
+                        })
+                        .catch(error => res.status(500).json({ error }));
+                } else {
+                    delete req.body.token;
+                    account.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
+                        .then(() => res.status(200).json({ message: 'compte modifié !' }))
+                        .catch(error => res.status(400).json({ error }));
+                }
 
 
-        } else{
+            } else {
 
-        res.sendStatus(403)
+                res.sendStatus(403)
 
-        };
-    })
-    .catch(error => res.status(500).json({ error }))
+            };
+        })
+        .catch(error => res.status(500).json({ error }))
 
-    
+
 
 
 
