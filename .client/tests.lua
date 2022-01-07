@@ -1,6 +1,6 @@
 --executer avec ctrl+shift+b ou via terminal > executer la tache > run lua
 --#region appel à la librairie socket locale
-package.path = package.path..';./.client/libs/lua/?.lua'
+package.path = package.path..';./.client/libs/lua/?.lua;./.client/?.lua'
 package.cpath = package.cpath..';./.client/libs/socket/?.dll;./libs/mime/?.dll'
 
 local http = require 'socket.http'
@@ -443,31 +443,136 @@ TestBooking = {}
     end
 
     -- creer une reservation
-    function TestBooking:test1a() -- par un client
+    function TestBooking:test1a() -- sans session
         local status = nil;
-        status, bookId1 = booking.create(url,tokenSess2,"2018-05-04T13:30",clientId2,clientId1)
+        status = booking.create(url,nil,"2012-12-21T12:12:00.000Z",adminId,clientId2)
+        lu.assertEquals(status, 403)
+    end
+    function TestBooking:test1b() -- par un client
+        local status = nil;
+        status, bookId = booking.create(url,tokenSess2,"2018-05-04T13:30:00.000Z",clientId2,adminId)
         lu.skipIf(status == 400, "la reservation existe déjà")
         lu.assertEquals(status, 201)
     end
-    function TestBooking:test1b() -- sans session
-        local status = nil;
-        status = booking.create(url,nil,"2018-05-04T13:30",adminId,clientId1)
-        lu.assertEquals(status, 403)
-    end
 
     -- afficher une réservation
-    function TestBooking:test2() -- par un client
+    function TestBooking:test2a() -- par un client inconnu
         local status = nil;
-        status = booking.showOne(url,tokenSess2, bookId1)
+        local date = nil;
+        local participants = nil;
+
+        status, date, participants = booking.showOne(url,tokenSess1, bookId)
+
+        lu.assertEquals(status, 403)
+        lu.assertEquals(date, nil)
+        lu.assertEquals(participants,nil)
+    end
+    function TestBooking:test2b() -- par un client
+        local status = nil;
+        local date = nil;
+        local participants = nil;
+
+        status, date, participants = booking.showOne(url,tokenSess2, bookId)
+
         lu.assertEquals(status, 200)
+        lu.assertEquals(date, "2018-05-04T13:30:00.000Z")
+        lu.assertEquals(table.concat(participants),table.concat({clientId2, adminId}))
+    end
+    function TestBooking:test2c() -- par un admin
+        local status = nil;
+        local date = nil;
+        local participants = nil;
+
+        status, date, participants = booking.showOne(url,tokenSessAdmin, bookId)
+
+        lu.assertEquals(status, 200)
+        lu.assertEquals(date, "2018-05-04T13:30:00.000Z")
+        lu.assertEquals(table.concat(participants),table.concat({clientId2, adminId}))
     end
 
     -- afficher les réservations d'un compte
+    function TestBooking:test3a() -- par un proprio
+        local status = nil;
+        local dates = nil;
+
+        status, dates = booking.showByAcc(url, tokenSess2, clientId2)
+
+        lu.assertEquals(dates.date,"2018-05-04T13:30:00.000Z")
+        lu.assertEquals(status, 200)
+    end
+    function TestBooking:test3b() -- par un client inconnu
+        local status = nil;
+        local dates = nil;
+
+        status, dates = booking.showByAcc(url, tokenSess1, clientId2)
+
+        lu.assertEquals(dates.date,nil)
+        lu.assertEquals(status, 403)
+    end
+    function TestBooking:test3c() -- par un admin
+        local status = nil;
+        local dates = nil;
+
+        status, dates = booking.showByAcc(url, tokenSessAdmin, clientId2)
+
+        lu.assertEquals(dates.date,"2018-05-04T13:30:00.000Z")
+        lu.assertEquals(status, 200)
+    end
 
     -- modifier une réservation
+    function TestBooking:test4a() -- par un proprio
+        local status = nil;
+        local statusTwo = nil;
+        local date = nil;
+        local participants = nil;
+
+        status = booking.modify(url, tokenSess2, bookId, "2015-10-22T08:30:00.000Z", clientId2, adminId )
+        statusTwo, date, participants = booking.showOne(url,tokenSess2, bookId)
+        
+        lu.assertEquals(status, 200)
+        lu.assertEquals(date, "2015-10-22T08:30:00.000Z")
+        lu.assertEquals(statusTwo, 200)
+    end
+    function TestBooking:test4b() -- par un client inconnu
+        local status = nil;
+        local statusTwo = nil;
+        local date = nil;
+        local participants = nil;
+
+        status = booking.modify(url, tokenSess1, bookId, "2020-05-30T12:30:00.000Z", clientId1, clientId2 )
+        statusTwo, date, participants = booking.showOne(url,tokenSess2, bookId)
+        
+        lu.assertEquals(status, 403)
+        lu.assertEquals(date, "2015-10-22T08:30:00.000Z")
+        lu.assertEquals(statusTwo, 200)
+    end
+    function TestBooking:test4c() -- par un admin
+        local status = nil;
+        local statusTwo = nil;
+        local date = nil;
+        local participants = nil;
+
+        status = booking.modify(url, tokenSessAdmin, bookId, "2013-03-03T13:30:00.000Z", clientId1, adminId )
+        statusTwo = booking.showOne(url,tokenSess2, bookId)
+        statusThree, date, participants = booking.showOne(url, tokenSess1, bookId)
+        
+        lu.assertEquals(status, 200)
+        lu.assertEquals(statusTwo, 403)
+        lu.assertEquals(statusThree, 200)
+        lu.assertEquals(date, "2013-03-03T13:30:00.000Z")
+    end
 
     -- supprimer une réservation
-
+    function TestBooking:test5a() -- par un client inconnu
+        local status = nil;
+        status = booking.del(url, tokenSess2, bookId)
+        lu.assertEquals(status, 403)
+    end
+    function TestBooking:test5b() -- par un client
+        local status = nil;
+        status = booking.del(url, tokenSess1, bookId)
+        lu.assertEquals(status, 200)
+    end
 --#endregion
 
 -- suppression de compte

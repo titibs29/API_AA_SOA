@@ -7,7 +7,30 @@ local book = {}
 
     -- affiche les réservations associées à un utilisateur
     function book.showByAcc(url, tokenSess, idToSearch)
-        
+        local urlString = url.."/book/byAcc/"..idToSearch
+        local req = json.encode({token = tokenSess})
+        local res = {};
+        local body = {};
+        local firstItem = {};
+
+        local result, statuscode, headers, statustext = http.request {
+            method = "GET",
+            url = urlString,
+            source = ltn12.source.string(req),
+            headers={
+                ["content-type"] = "application/json; charset=utf-8",
+                ["content-length"] = tostring(#req)
+            },
+            sink = ltn12.sink.table(res)
+        }
+
+        if statuscode == 200 then
+            body = json.decode(table.concat(res))
+            firstItem = body[1]
+
+        end 
+
+        return statuscode, firstItem
     end
 
     -- affiche une réservation
@@ -74,13 +97,47 @@ local book = {}
     end
 
     -- modifie une réservation
-    function book.modify(url, token, idToModify)
-        
+    function book.modify(url, tokenSess, idToModify, bookDate, ...)
+        local urlString = url.."/book/"..idToModify
+        local modifyString = {token = tokenSess, date = bookDate, participants = {}}
+        for k in ipairs(arg) do
+            modifyString.participants[k] = arg[k]
+        end
+        local req = json.encode(modifyString)
+        local res = {};
+
+        local result, statuscode, headers, statustext = http.request {
+        method = "PUT",
+        url = urlString,
+        source = ltn12.source.string(req),
+        headers={
+            ["content-type"] = "application/json; charset=utf-8",
+            ["content-length"] = tostring(#req)
+        },
+        sink = ltn12.sink.table(res)
+        }
+
+        return statuscode
     end
 
     -- supprime une réservation
-    function book.del(url, token, idToDel)
-        
+    function book.del(url, tokenSess, idToDel)
+        local urlString = url.."/book/"..idToDel
+    local req = json.encode({token = tokenSess})
+    local res = {}
+
+    local result, statuscode, headers, statustext = http.request {
+        method = "DELETE",
+        url = urlString,
+        source = ltn12.source.string(req),
+        headers={
+            ["content-type"] = "application/json; charset=utf-8",
+            ["content-length"] = tostring(#req)
+        },
+        sink = ltn12.sink.table(res)
+    }
+
+    return statuscode
     end
 
 return book

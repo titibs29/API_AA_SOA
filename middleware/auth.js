@@ -126,10 +126,8 @@ exports.bookProp = async (token, bookId) => {
         AccBook.findOne({ acc: accId, book: bookId })
             .then(link => {
                 if (!link) {
-                    console.log("pas trouvé")
                     resolve(false)
                 } else {
-                    console.log("existe")
 
                     resolve(true)
                 }

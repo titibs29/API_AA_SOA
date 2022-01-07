@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 
 const Account = require('../models/account');
+const AccBook = require('../models/acc-book');
 
 
 // login
@@ -150,12 +151,13 @@ exports.del = (req, res, next) => {
 
                 Account.findOne({ _id: idToDel })
                     .then(account => {
-                        if (!account) {
-                            res.status(404).json({ message: "le compte n'existe pas" });
-                        } else {
+                        if (account) {
+                            //supprime les liens de réservation
                             Account.deleteOne({ _id: req.params.id })
-                                .then(() => res.status(200).json({ message: 'compte supprimé !' }))
-                                .catch(error => res.status(400).json({ error }));
+                            .then(() => res.status(200).json({ message: 'compte supprimé !' }))
+                            .catch(error => res.status(400).json({ error }));
+                        } else {
+                            res.status(404).json({ message: "le compte n'existe pas" });
                         };
                     })
                     .catch(error => res.status(500).json({ error }));
