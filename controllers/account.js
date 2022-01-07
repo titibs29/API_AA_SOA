@@ -9,31 +9,30 @@ const AccBook = require('../models/acc-book');
 
 // login
 exports.login = (req, res, next) => {
-    console.log('login de', req.body.name);
+    const name = req.body.name;
 
-    Account.findOne({ name: req.body.name })
+    Account.findOne({ name: name })
         .then(account => {
-            if (!account) {
-                return res.status(404).json({ error: 'utilisateur introuvable !' });
-            }
-
-            bcrypt.compare(req.body.password, account.password, (err, ret) => {
-                if (err) return res.status(500).json({ error });
-                if (!ret) return res.status(401).json({ error: 'mot de passe incorrect !' });
-
-                res.status(200).json({
-                    id: account._id,
-                    token: jwt.sign(
-                        { id: account._id },
-                        'RANDOM_TOKEN_SECRET',
-                        { expiresIn: '24h' }
-                    )
-                });
-            })
-
-
+            if (account) {
+                
+                bcrypt.compare(req.body.password, account.password, (err, ret) => {
+                    if (err) return res.status(500);
+                    if (!ret) return res.status(401).json({ error: 'mot de passe incorrect !' });
+                    
+                    res.status(200).json({
+                        id: account._id,
+                        token: jwt.sign(
+                            { id: account._id },
+                            'RANDOM_TOKEN_SECRET',
+                            { expiresIn: '24h' }
+                            )
+                        });
+                    })
+                }else{
+                    return res.sendStatus(404);
+                }
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch(error => res.sendStatus(500));
 
 };
 
@@ -136,26 +135,28 @@ exports.modify = (req, res, next) => {
 // supprime un compte
 exports.del = (req, res, next) => {
     console.log('supprime un compte ');
+    const token = req.body.token
+    const idToDel = req.params.id;
 
-    if (!req.body.token || !req.body.id) {
+    if (!token || !idToDel) {
         res.status(403).json({ message: 'informations manquantes !' });
     }
-    const token = req.body.token;
-    const idToDel = req.params.id;
 
     const proprio = auth.isProp(token, idToDel)
     auth.isAdmin(token)
         .then(admin => {
-
             if (admin || proprio) {
-
                 Account.findOne({ _id: idToDel })
                     .then(account => {
                         if (account) {
                             //supprime les liens de réservation
-                            Account.deleteOne({ _id: req.params.id })
-                            .then(() => res.status(200).json({ message: 'compte supprimé !' }))
-                            .catch(error => res.status(400).json({ error }));
+                            AccBook.deleteMany({ acc: idToDel })
+                                .then(accBook => {
+                                    Account.deleteOne({ _id: idToDel })
+                                        .then(() => res.status(200).json({ message: 'compte supprimé !' }))
+                                        .catch(error => res.status(400).json({ error }));
+                                })
+                                .catch(error => res.status(500).json({ error }));
                         } else {
                             res.status(404).json({ message: "le compte n'existe pas" });
                         };

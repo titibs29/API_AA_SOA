@@ -12,7 +12,6 @@ exports.showByAcc = (req, res, next) => {
     const proprio = auth.isProp(token, id_acc)
     auth.isAdmin(token)
         .then(admin => {
-            console.log(proprio,admin)
             if (proprio || admin) {
                 AccBook.find({ acc: id_acc }, 'book').exec()
                     .then(parts => {
@@ -33,7 +32,7 @@ exports.showByAcc = (req, res, next) => {
                                 })
                             })
                             boucleFinie
-                                .then(() => res.status(200).json(dataToSend) )
+                                .then(() => res.status(200).json(dataToSend))
                                 .catch(error => res.status(500).json({ error }));
                         } else {
                             res.sendStatus(404)
@@ -68,14 +67,14 @@ exports.showOne = (req, res, next) => {
 
                                             parts.forEach((v, k, a) => {
                                                 dataToSend.participants.push(v.acc)
-                                                if(k === a.length -1) resolve();
+                                                if (k === a.length - 1) resolve();
                                             })
                                         })
 
                                         boucleFinie
-                                        .then(() => res.status(200).json(dataToSend))
-                                        .catch(error => res.status(500).json({ error }));
-                                        
+                                            .then(() => res.status(200).json(dataToSend))
+                                            .catch(error => res.status(500).json({ error }));
+
                                     })
                                     .catch(error => res.status(500).json({ error }));
                             })
