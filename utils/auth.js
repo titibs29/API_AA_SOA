@@ -6,8 +6,6 @@ const Pi = require('../models/pi');
 
 
 exports.isProp = (token, idToTest) => {
-
-
     if (!token) {
         return false
     }

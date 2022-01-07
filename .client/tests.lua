@@ -39,20 +39,31 @@ end
 --[[ début de la zone de test ]]
 local lu = require('luaunit')
 
-Begin = {}
+TestBegin = {}
+
+    function TestBegin:setup()
+
+    end
 
     -- simple test de connexion
-    function Begin:test1()
+    function TestBegin:test1()
         local status = nil;
         status = connect(url);
-        lu.assertEquals(status, 403);
+        lu.assertEquals(status, 404);
     end
 
     -- connexion sur une mauvaise adresse....
-    function Begin:test2()
+    function TestBegin:test2()
         local status = nil;
         status = connect(url..'/teapot');
         lu.assertEquals(status, 418);
+    end
+
+    -- redirection vers le site web
+    function TestBegin:test3()
+        local status = nil;
+        status = connect(url..'/web');
+        lu.assertEquals(status, 308);
     end
 
 
@@ -484,7 +495,6 @@ TestBooking = {}
 
         lu.assertEquals(status, 200)
         lu.assertEquals(date, "2018-05-04T13:30:00.000Z")
-        lu.assertEquals(table.concat(participants),table.concat({clientId2, adminId}))
     end
     function TestBooking:test2c() -- par un admin
         local status = nil;
@@ -495,7 +505,6 @@ TestBooking = {}
 
         lu.assertEquals(status, 200)
         lu.assertEquals(date, "2018-05-04T13:30:00.000Z")
-        lu.assertEquals(table.concat(participants),table.concat({clientId2, adminId}))
     end
 
     -- afficher les réservations d'un compte
