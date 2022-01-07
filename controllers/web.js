@@ -1,6 +1,6 @@
 
 
 module.exports = (req, res, next) => {
-    console.log('redirection vers la page web');
-    res.sendStatus(200);
+    res.writeHead(301, { Location: 'https://www.archeosite.be/fr/home-2/'}).end();
 };
+

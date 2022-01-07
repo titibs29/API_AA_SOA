@@ -48,6 +48,14 @@ Begin = {}
         lu.assertEquals(status, 403);
     end
 
+    -- connexion sur une mauvaise adresse....
+    function Begin:test2()
+        local status = nil;
+        status = connect(url..'/teapot');
+        lu.assertEquals(status, 418);
+    end
+
+
 
 --#region account
 TestAccount = {}

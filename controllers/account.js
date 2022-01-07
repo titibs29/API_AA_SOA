@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const auth = require('../middleware/auth');
+const auth = require('../utils/auth');
 
 const Account = require('../models/account');
 const AccBook = require('../models/acc-book');
@@ -76,7 +76,10 @@ exports.showOne = (req, res, next) => {
         .then(admin => {
             if (proprio || admin) {
                 Account.findOne({ _id: req.params.id })
-                    .then(account => res.status(200).json(account))
+                    .then(account => {
+                        delete account._doc.password
+                        res.status(200).json(account)
+                    })
                     .catch(error => res.status(404).json({ error }));
             } else {
 

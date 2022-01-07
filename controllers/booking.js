@@ -1,7 +1,7 @@
 const Booking = require('../models/booking');
 const AccBook = require('../models/acc-book');
 
-const auth = require('../middleware/auth');
+const auth = require('../utils/auth');
 
 
 // affiche les réservations associées a ID

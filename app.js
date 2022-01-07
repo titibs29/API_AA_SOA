@@ -3,7 +3,6 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const path = require('path');
 
-
 const accountRoutes = require('./routes/account');
 const piRoutes = require('./routes/pi');
 const bookingRoutes = require('./routes/booking');
@@ -31,16 +30,16 @@ app.use((req,res,next) => {
 
 app.use(express.json());
 
+
 app.use('/acc', accountRoutes);
 app.use('/pi', piRoutes);
 app.use('/book',bookingRoutes);
 app.use('/store',articlesRoutes);
 app.use('/web',webRoutes);
+app.use('/teapot', function (req,res) {res.sendStatus(418)})
 
 // chemin par défaut
-app.get('/', (req,res,next) => {
-  console.log('connexion à la page d\'acceuil');
-  res.sendStatus(403);
-});
+app.get('/*', (req,res,next) => {res.sendStatus(404);});
+app.all('/*', (req, res) => {res.sendStatus(405)}) // interdit avec une autre méthode
 
 module.exports = app;

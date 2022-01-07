@@ -1,6 +1,6 @@
 const Article = require('../models/article');
 
-const auth = require('../middleware/auth');
+const auth = require('../utils/auth');
 
 // afficher un article
 exports.showOne = (req, res, next) => {
