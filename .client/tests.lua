@@ -465,7 +465,7 @@ TestBooking = {}
     function TestBooking:test1a() -- sans session
         local status = nil;
         status = booking.create(url,nil,"2012-12-21T12:12:00.000Z",adminId,clientId2)
-        lu.assertEquals(status, 403)
+        lu.assertEquals(status, 401)
     end
     function TestBooking:test1b() -- par un client
         local status = nil;
@@ -489,9 +489,8 @@ TestBooking = {}
     function TestBooking:test2b() -- par un client
         local status = nil;
         local date = nil;
-        local participants = nil;
 
-        status, date, participants = booking.showOne(url,tokenSess2, bookId)
+        status, date = booking.showOne(url,tokenSess2, bookId)
 
         lu.assertEquals(status, 200)
         lu.assertEquals(date, "2018-05-04T13:30:00.000Z")
@@ -499,9 +498,8 @@ TestBooking = {}
     function TestBooking:test2c() -- par un admin
         local status = nil;
         local date = nil;
-        local participants = nil;
 
-        status, date, participants = booking.showOne(url,tokenSessAdmin, bookId)
+        status, date = booking.showOne(url,tokenSessAdmin, bookId)
 
         lu.assertEquals(status, 200)
         lu.assertEquals(date, "2018-05-04T13:30:00.000Z")
@@ -541,10 +539,9 @@ TestBooking = {}
         local status = nil;
         local statusTwo = nil;
         local date = nil;
-        local participants = nil;
 
         status = booking.modify(url, tokenSess2, bookId, "2015-10-22T08:30:00.000Z", clientId2, adminId )
-        statusTwo, date, participants = booking.showOne(url,tokenSess2, bookId)
+        statusTwo, date = booking.showOne(url,tokenSess2, bookId)
         
         lu.assertEquals(status, 200)
         lu.assertEquals(date, "2015-10-22T08:30:00.000Z")
@@ -554,10 +551,9 @@ TestBooking = {}
         local status = nil;
         local statusTwo = nil;
         local date = nil;
-        local participants = nil;
 
         status = booking.modify(url, tokenSess1, bookId, "2020-05-30T12:30:00.000Z", clientId1, clientId2 )
-        statusTwo, date, participants = booking.showOne(url,tokenSess2, bookId)
+        statusTwo, date = booking.showOne(url,tokenSess2, bookId)
         
         lu.assertEquals(status, 403)
         lu.assertEquals(date, "2015-10-22T08:30:00.000Z")
@@ -567,11 +563,10 @@ TestBooking = {}
         local status = nil;
         local statusTwo = nil;
         local date = nil;
-        local participants = nil;
 
         status = booking.modify(url, tokenSessAdmin, bookId, "2013-03-03T13:30:00.000Z", clientId1, adminId )
         statusTwo = booking.showOne(url,tokenSess2, bookId)
-        statusThree, date, participants = booking.showOne(url, tokenSess1, bookId)
+        statusThree, date = booking.showOne(url, tokenSess1, bookId)
         
         lu.assertEquals(status, 200)
         lu.assertEquals(statusTwo, 403)
