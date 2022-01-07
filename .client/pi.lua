@@ -74,7 +74,7 @@ function pi.create(url, tokenSess, newName, coordX, coordY, descript_fr, descrip
 
     if statuscode == 201 or statuscode == 400 then
         body = json.decode(table.concat(res))
-        piId = body.message
+        piId = body.id
     end
 
     return statuscode, piId
