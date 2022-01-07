@@ -83,7 +83,10 @@ exports.signin = (req, res, next) => {
                                             res.sendStatus(500);
                                         });
                                 })
-                                .catch(error => res.status(400).json({ error }));
+                                .catch(error => {
+                                    console.error(error);
+                                    res.sendStatus(500);
+                                });
                         })
                         .catch(error => {
                             console.error(error)
@@ -126,20 +129,28 @@ exports.showOne = (req, res) => {
                                 res.sendStatus(404);
                             }
                         })
-                        .catch(error => res.status(400).json({ error }));
+                        .catch(error => {
+                            console.error(error);
+                            res.sendStatus(500);
+                        });
                 } else {
                     res.sendStatus(403);
                 }
             })
-            .catch(error => res.status(400).json({ error }));
+            .catch(error => {
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
+            });
     }
     catch (error) {
         console.error(error)
-        if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        }else if(error instanceof jwt.JsonWebTokenError){
-            res.status(400).json({ error });
-        }else if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
         } else {
             res.sendStatus(500);
@@ -204,17 +215,22 @@ exports.modify = (req, res, next) => {
                 };
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             })
     }
     catch (error) {
-        console.error(error)
         if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        }else if(error instanceof jwt.JsonWebTokenError){
-            res.status(400).json({ error });
-        }else if (error == "NoToken") {
+            res.status(401).json({ error });
+        } else if (error instanceof jwt.JsonWebTokenError) {
+            res.status(401).json({ error });
+        } else if (error == "NoToken") {
             res.status(401).json({ error });
         } else {
             res.sendStatus(500);
@@ -267,17 +283,22 @@ exports.del = (req, res, next) => {
                 };
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             });
     }
     catch (error) {
-        console.error(error)
         if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        }else if(error instanceof jwt.JsonWebTokenError){
-            res.status(400).json({ error });
-        }else if (error == "NoToken") {
+            res.status(401).json({ error });
+        } else if (error instanceof jwt.JsonWebTokenError) {
+            res.status(401).json({ error });
+        } else if (error == "NoToken") {
             res.status(401).json({ error });
         } else {
             res.sendStatus(500);
@@ -307,17 +328,19 @@ exports.showAll = (req, res, next) => {
                 }
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             });
     }
     catch (error) {
         console.error(error)
-        if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        }else if(error instanceof jwt.JsonWebTokenError){
-            res.status(400).json({ error });
-        }else if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
         } else {
             res.sendStatus(500);

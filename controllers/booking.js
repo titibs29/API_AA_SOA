@@ -58,16 +58,16 @@ exports.showByAcc = (req, res, next) => {
                 }
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                    console.error(error);
+                    res.sendStatus(500);
             });
     }
     catch (error) {
         console.error(error)
         if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
+            res.status(401).json({ error });
         } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(400).json({ error });
+            res.status(401).json({ error });
         } else if (error == "NoToken") {
             res.status(401).json({ error });
         } else if (error == "NoId") {
@@ -130,17 +130,19 @@ exports.showOne = (req, res, next) => {
                     });
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error)
+                    res.sendStatus(500)
+                }
             });
     }
     catch (error) {
         console.error(error)
-        if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(400).json({ error });
-        } else if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
         } else {
             res.sendStatus(500);
@@ -206,17 +208,19 @@ exports.create = (req, res, next) => {
 
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error)
+                    res.sendStatus(500)
+                }
             });
     }
     catch (error) {
         console.error(error)
-        if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(400).json({ error });
-        } else if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
         } else if (error == "NoDate") {
             res.status(400).json({ error });
@@ -281,17 +285,18 @@ exports.modify = (req, res, next) => {
                     });
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             });
     }
     catch (error) {
-        console.error(error)
-        if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(400).json({ error });
-        } else if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
         } else {
             res.sendStatus(500);
@@ -317,18 +322,18 @@ exports.del = (req, res, next) => {
                                 .then(booking => {
                                     if (booking) {
                                         AccBook.deleteMany({ book: id })
-                                        .then(accBook => {
-                                            Booking.deleteOne({ _id: id })
-                                            .then(() => res.sendStatus(200))
+                                            .then(accBook => {
+                                                Booking.deleteOne({ _id: id })
+                                                    .then(() => res.sendStatus(200))
+                                                    .catch(error => {
+                                                        console.error(error);
+                                                        res.sendStatus(500);
+                                                    });
+                                            })
                                             .catch(error => {
                                                 console.error(error);
                                                 res.sendStatus(500);
                                             });
-                                        })
-                                        .catch(error => {
-                                            console.error(error);
-                                            res.sendStatus(500);
-                                        });
                                     } else {
                                         res.sendStatus(404)
                                     }
@@ -347,17 +352,18 @@ exports.del = (req, res, next) => {
                     });
             })
             .catch(error => {
-                console.error(error);
-                res.sendStatus(500);
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             });
     }
     catch (error) {
-        console.error(error)
-        if (error instanceof jwt.TokenExpiredError) {
-            res.status(400).json({ error });
-        } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(400).json({ error });
-        } else if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
         } else {
             res.sendStatus(500);

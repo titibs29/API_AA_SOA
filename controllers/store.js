@@ -1,115 +1,242 @@
+const jwt = require('jsonwebtoken');
+
 const Article = require('../models/article');
 
 const auth = require('../utils/auth');
 
 // afficher un article
 exports.showOne = (req, res, next) => {
-    console.log('affiche un article');
-    auth.isAdmin(req.body.token)
-        .then(admin => {
-            if (admin) {
-                Article.findOne({ _id: req.params.id })
-                    .then(article => res.status(200).json(article))
-                    .catch(error => res.status(404).json({ error }));
-            } else {
+    try {
+        if (!req.body.token) {
+            throw "NoToken"
+        }
+        if ( !/[0-9a-f]{12}/g.test(req.params.id) && !/[0-1]{24}/g.test(req.params.id)){
+            throw "BadIdFormat"
+        }
+        const token = req.body.token;
+        const id = req.params.id
+        auth.isAdmin(token)
+            .then(admin => {
+                if (admin) {
+                    Article.findOne({ _id: id })
+                        .then(article => {
+                            if (article) {
+                                res.status(200).json(article)
+                            } else {
+                                res.sendStatus(404)
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            res.sendStatus(500);
+                        });
+                } else {
+                    res.sendStatus(403);
+                }
+            })
+            .catch(error => {
+                if (error instanceof jwt.TokenExpiredError) {
+            res.status(401).json({ error });
+        } else if (error instanceof jwt.JsonWebTokenError) {
+            res.status(401).json({ error });
+        } else {
+                console.error(error);
+                res.sendStatus(500);
+        }
+            });
+    }
+    catch (error) {
+         if (error == "NoToken") {
+            res.status(401).json({ error });
+        } else if(error == "BadIdFormat"){
+            res.status(400).json({ error });
+        } else {
+            res.sendStatus(500);
+        }
 
-                res.sendStatus(403);
-            }
-        })
-        .catch(error => res.status(500).json({ error }));
+    }
 };
 
 // creer un article
 exports.create = (req, res, next) => {
-    console.log('crée un article');
+    try {
+        if (!req.body.token) {
+            throw "NoToken"
+        }
+        if (!req.body.name) {
+            throw "NoName"
+        }
+        const token = req.body.token;
+        const name = req.body.name
 
-    auth.isAdmin(req.body.token)
-        .then(admin => {
+        delete req.body.token;
+        auth.isAdmin(token)
+            .then(admin => {
+                if (admin) {
+                    Article.findOne({ name: name })
+                        .then(article => {
+                            if (!article) {
+                                const article = new Article({ ...req.body });
+                                article.save()
+                                    .then(() => {
+                                        Article.findOne({ name: name })
+                                            .then(article => res.status(201).json({ id: article._id }))
+                                            .catch(error => {
+                                                console.error(error);
+                                                res.sendStatus(500);
+                                            });
+                                    })
+                                    .catch(error => {
+                                        console.error(error);
+                                        res.sendStatus(500);
+                                    });
+                            } else {
+                                res.status(400).json({ id: article._id })
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            res.sendStatus(500);
+                        });
+                } else {
+                    res.sendStatus(403);
+                }
+            })
+            .catch(error => {
+                if (error instanceof jwt.TokenExpiredError) {
+            res.status(401).json({ error });
+        } else if (error instanceof jwt.JsonWebTokenError) {
+            res.status(401).json({ error });
+        } else {
+                console.error(error);
+                res.sendStatus(500);
+        }
+            });
+    }
+    catch (error) {
+         if (error == "NoToken") {
+            res.status(401).json({ error });
+        } else if (error == "NoName") {
+            res.status(400).json({ error });
+        } else {
+            res.sendStatus(500);
+        }
 
-            if (admin) {
-
-                Article.findOne({ name: req.body.name })
-                    .then(article => {
-                        if (article) {
-                            res.status(400).json({ message: article._id })
-                        } else {
-
-                            delete req.body.token;
-                            const article = new Article({ ...req.body });
-                            article.save()
-                                .then(() => {
-                                    Article.findOne({ name: req.body.name })
-                                        .then(article => res.status(201).json({ message: article._id }))
-                                        .catch(error => res.status(500).json({ error }));
-                                }).catch(error => {
-                                    res.status(400).json({ error: error });
-                                });
-                        }
-                    })
-                    .catch(error => res.status(500).json({ error }));
-            } else {
-                res.sendStatus(403);
-            }
-        })
-        .catch(error => res.status(500).json({ error }))
+    }
 };
 
 //modifier un article
 exports.modify = (req, res, next) => {
-    console.log('modifie un article');
-    auth.isAdmin(req.body.token)
-        .then(admin => {
-            if (admin) {
-                delete req.body.token;
+    try {
+        if (!req.body.token) {
+            throw "NoToken"
+        }
+        const token = req.body.token;
+        const id = req.params.id
+        delete req.body.token;
+        auth.isAdmin(token)
+            .then(admin => {
+                if (admin) {
 
-                Article.findOne({ _id: req.params.id })
-                    .then(article => {
-                        if (!article) {
+                    Article.findOne({ _id: id })
+                        .then(article => {
+                            if (article) {
+                                Article.updateOne({ _id: id }, { ...req.body, _id: id })
+                                .then(article => res.sendStatus(200))
+                                .catch(error => {
+                                    console.error(error);
+                                    res.sendStatus(500);
+                                });
+                            } else {
+                                res.sendStatus(404)
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            res.sendStatus(500);
+                        });
 
-                            res.status(404).json({ message: 'article inexistant' })
-                        } else {
-                            Article.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-                                .then(article => res.status(200).json({ message: 'article modifié' }))
-                                .catch(error => res.status(400).json({ error }));
-                        }
-                    })
-                    .catch(error => res.status(500).json({ error }))
+                } else {
+                    res.sendStatus(403)
+                }
+            })
+            .catch(error => {
+                if (error instanceof jwt.TokenExpiredError) {
+            res.status(401).json({ error });
+        } else if (error instanceof jwt.JsonWebTokenError) {
+            res.status(401).json({ error });
+        } else{
+                console.error(error);
+                res.sendStatus(500);
+    }
+            });
+    }
+    catch (error) {
+         if (error == "NoToken") {
+            res.status(401).json({ error });
+        } else {
+            res.sendStatus(500);
+        }
 
-            } else {
-                res.sendStatus(403)
-            }
-        })
-        .catch(error => res.status(500).json({ error }));
+    }
 };
 
 //supprimer un article
 exports.del = (req, res, next) => {
-    console.log('supprime un article');
-    auth.isAdmin(req.body.token)
+    try {
+        if (!req.body.token) {
+            throw "NoToken"
+        }
+        const token = req.body.token;
+        const id = req.params.id
+        auth.isAdmin(token)
         .then(admin => {
             if (admin) {
 
-                Article.findOne({ _id: req.params.id })
+                Article.findOne({ _id: id })
                     .then(article => {
-                        if (!article) {
-                            res.status(404).json({ message: "l'article n'existe pas" })
+                        if (article) {
+                            Article.deleteOne({ _id: id })
+                            .then(() => res.sendStatus(200))
+                            .catch(error => {
+                                console.error(error);
+                                res.sendStatus(500);
+                            });
                         } else {
-                            Article.deleteOne({ _id: req.params.id })
-                                .then(() => res.status(200).json({ message: "compte supprimé" }))
-                                .catch(error => res.status(500).json({ error }));
+                            res.sendStatus(404)
                         }
                     })
-                    .catch(error => res.status(500).json({ error }));
+                    .catch(error => {
+                        console.error(error);
+                        res.sendStatus(500);
+                    });
             } else {
                 res.sendStatus(403);
             }
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch(error => {
+            if (error instanceof jwt.TokenExpiredError) {
+            res.status(401).json({ error });
+        }else if(error instanceof jwt.JsonWebTokenError){
+            res.status(401).json({ error });
+        }else {
+            console.error(error);
+            res.sendStatus(500);
+        }
+        });
+    }
+    catch (error) {
+        if (error == "NoToken") {
+            res.status(401).json({ error });
+        } else {
+            res.sendStatus(500);
+        }
+
+    }
 };
 
 // afficher tout le magasin
 exports.showAll = (req, res, next) => {
-    console.log('affiche tout le magasin');
     Article.find()
         .then(articles => res.status(200).json(articles))
         .catch(error => res.status(500).json({ error }));

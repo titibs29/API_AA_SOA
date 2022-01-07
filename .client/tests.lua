@@ -124,7 +124,7 @@ TestAccount = {}
         local name = nil;
         status, name = acc.showOne(url, tokenSess2, clientId1);
         lu.assertEquals(status, 403);
-        lu.assertEquals(name, 'nil');
+        lu.assertEquals(name, nil);
         
     end
     function TestAccount:test3c() -- par un admin
@@ -209,7 +209,7 @@ TestStore = {}
             5.25
         )
         lu.assertEquals(status, 403)
-        lu.assertEquals(badArticleId, 'nil')
+        lu.assertEquals(badArticleId, nil)
     end
     function TestStore:test2b() -- par un admin
         local status = 0;
@@ -244,8 +244,8 @@ TestStore = {}
         local prix = nil;
         status, name, prix = store.showOne(url, tokenSess1, articleId)
         lu.assertEquals(status, 403)
-        lu.assertEquals(name, 'nil')
-        lu.assertEquals(prix, 'nil')
+        lu.assertEquals(name, nil)
+        lu.assertEquals(prix, nil)
     end
     function TestStore:test3b() -- par un admin
         local status = nil;
@@ -261,12 +261,23 @@ TestStore = {}
         local status = nil;
         local name = nil;
         local prix = nil;
-        status, name, prix = store.showOne(url, tokenSessAdmin, 'fakeArticleId')
+        status, name, prix = store.showOne(url, tokenSessAdmin, '61d6da87fa9a919f15fa4e1d')
 
         lu.assertEquals(status, 404)
-        lu.assertEquals(name, 'nil')
-        lu.assertEquals(prix, 'nil')
+        lu.assertEquals(name, nil)
+        lu.assertEquals(prix, nil)
     end
+    function TestStore:test3d() -- un article qui n'existe pas
+        local status = nil;
+        local name = nil;
+        local prix = nil;
+        status, name, prix = store.showOne(url, tokenSessAdmin, 'veryBadId')
+
+        lu.assertEquals(status, 400)
+        lu.assertEquals(name, nil)
+        lu.assertEquals(prix, nil)
+    end
+
 
     -- modifier un article
     function TestStore:test4a() -- par un client
@@ -464,7 +475,7 @@ TestBooking = {}
     -- creer une reservation
     function TestBooking:test1a() -- sans session
         local status = nil;
-        status = booking.create(url,nil,"2012-12-21T12:12:00.000Z",adminId,clientId2)
+        status = booking.create(url,"BadToken","2012-12-21T12:12:00.000Z",adminId,clientId2)
         lu.assertEquals(status, 401)
     end
     function TestBooking:test1b() -- par un client

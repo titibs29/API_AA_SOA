@@ -7,11 +7,16 @@ local store = {}
 
 -- afficher un article
 function store.showOne(url, tokenSess, idToShow)
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif idToShow == nil then
+        error('id non fourni')
+    end
     local urlString = url.."/store/"..idToShow
     local req = json.encode({token = tokenSess})
     local res = {}
-    local name = 'nil'
-    local prix = 'nil'
+    local name = nil
+    local prix = nil
     local body = {}
 
     local result, statuscode, headers, statustext = http.request {
@@ -36,6 +41,13 @@ end
 
 -- créer un article
 function store.create(url, tokenSess, artName, descript, artPrix)
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif artName == nil then
+        error('nom non fourni')
+    elseif descript == nil then
+            error('descriptif non fourni')
+    end
     local urlString = url.."/store/"
     local createString = {token = tokenSess, name = artName, desc = descript}
     if artPrix then
@@ -43,7 +55,7 @@ function store.create(url, tokenSess, artName, descript, artPrix)
     end
     local req = json.encode(createString)
     local res = {}
-    local artId = 'nil'
+    local artId = nil
     local body = {}
 
     local result, statuscode, headers, statustext = http.request {
@@ -60,7 +72,7 @@ function store.create(url, tokenSess, artName, descript, artPrix)
     
     if statuscode == 201 or statuscode == 400 then
         body = json.decode(table.concat(res))
-        artId = body.message
+        artId = body.id
     end
     return statuscode, artId
 
@@ -68,6 +80,11 @@ end
 
 -- modifier un article
 function store.modify(url, tokenSess, idToChange, newName, newDesc, newPrix)
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif idToChange == nil then
+        error('id non fourni')
+    end
     local modifyString = {token = tokenSess};
     if newName then
         modifyString.name = newName;
@@ -100,7 +117,11 @@ end
 
 -- supprimer un article
 function store.del(url, tokenSess, idToDel)
-
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif idToDel == nil then
+        error('id non fourni')
+    end
     local urlString = url.."/store/"..idToDel
     local req = json.encode({token = tokenSess})
     local res = {}

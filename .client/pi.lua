@@ -7,16 +7,19 @@ local pi = {}
 
 -- affiche un pi
 function pi.showOne(url, idToShow)
+    if idToShow == nil then
+        error('id non fourni')
+    end
     local urlString = url.."/pi/"..idToShow
     local req = ''
     local res = {}
-    local name = 'nil'
-    local desc_fr = 'nil'
-    local desc_en = 'nil'
-    local artAssoc = 'nil'
+    local name = nil
+    local desc_fr = nil
+    local desc_en = nil
+    local artAssoc = nil
     local coordX = nil
     local coordY = nil
-    local videoUrl = 'nil'
+    local videoUrl = nil
     local body = {}
 
     local result, statuscode, headers, statustext = http.request {
@@ -45,6 +48,17 @@ end
 
 -- crée un pi
 function pi.create(url, tokenSess, newName, coordX, coordY, descript_fr, descript_en, videoUrl, artisanId)
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif newName == nil then
+        error('nom non fourni')
+    elseif descript_fr == nil then
+        error('descriptif non fourni')
+    elseif coordX == nil then
+        error('x non fourni')
+    elseif coordY == nil then
+        error('y non fourni')
+    end
     local urlString = url.."/pi/"
     local createString = {token = tokenSess, name = newName, desc_fr = descript_fr, x = coordX, y = coordY}
     if descript_en then
@@ -58,7 +72,7 @@ function pi.create(url, tokenSess, newName, coordX, coordY, descript_fr, descrip
     end
     local req = json.encode(createString)
     local res = {}
-    local piId = 'nil'
+    local piId = nil
     local body = {}
 
     local result, statuscode, headers, statustext = http.request {
@@ -82,6 +96,11 @@ end
 
 -- modifie un pi
 function pi.modify(url, tokenSess, idToChange, newName, coordX, coordY, descript_fr, descript_en, videoUrl, artisanId)
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif idToChange == nil then
+        error('id non fourni')
+    end
     local modifyString = {token = tokenSess};
     if newName then
         modifyString.name = newName;
@@ -125,7 +144,11 @@ end
 
 -- supprime un pi
 function pi.del(url, tokenSess, idToDel)
-
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif idToDel == nil then
+        error('id non fourni')
+    end
     local urlString = url.."/pi/"..idToDel
     local req = json.encode({token = tokenSess})
     local res = {}

@@ -7,6 +7,11 @@ local book = {}
 
     -- affiche les réservations associées à un utilisateur
     function book.showByAcc(url, tokenSess, idToSearch)
+        if tokenSess == nil then
+            error('token non fourni')
+        elseif idToSearch == nil then
+            error('id non fourni')
+        end
         local urlString = url.."/book/byAcc/"..idToSearch
         local req = json.encode({token = tokenSess})
         local res = {};
@@ -35,6 +40,11 @@ local book = {}
 
     -- affiche une réservation
     function book.showOne(url, tokenSess, idToShow)
+        if tokenSess == nil then
+            error('token non fourni')
+        elseif idToShow == nil then
+            error('id non fourni')
+        end
         local urlString = url.."/book/"..idToShow
         local req = json.encode({token = tokenSess})
         local res = {};
@@ -65,6 +75,11 @@ local book = {}
 
     -- crée une reservation
     function book.create(url, tokenSess, bookDate, ...)
+        if tokenSess == nil then
+            error('token non fourni')
+        elseif bookDate == nil then
+            error('date non fournie')
+        end
         local urlString = url.."/book/"
         local createString = {token = tokenSess, date = bookDate, participants = {}}
         
@@ -98,6 +113,11 @@ local book = {}
 
     -- modifie une réservation
     function book.modify(url, tokenSess, idToModify, bookDate, ...)
+        if tokenSess == nil then
+            error('token non fourni')
+        elseif idToModify == nil then
+            error('id non fourni')
+        end
         local urlString = url.."/book/"..idToModify
         local modifyString = {token = tokenSess, date = bookDate, participants = {}}
         for k in ipairs(arg) do
@@ -122,6 +142,11 @@ local book = {}
 
     -- supprime une réservation
     function book.del(url, tokenSess, idToDel)
+        if tokenSess == nil then
+            error('token non fourni')
+        elseif idToDel == nil then
+            error('id non fourni')
+        end
         local urlString = url.."/book/"..idToDel
     local req = json.encode({token = tokenSess})
     local res = {}

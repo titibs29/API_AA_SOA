@@ -8,10 +8,15 @@ local acc = {}
 
 -- creer un compte
 function acc.create(url, name, password)
+    if name == nil then
+        error('nom non fourni')
+    elseif password == nil then
+        error('mot de passe non fourni')
+    end
     local urlString = url.."/acc/signin"
     local req = json.encode({name = name, password = password})
     local res = {}
-    local clientId = 'nil'
+    local clientId = nil
     local body = {}
 
     local result, statuscode, headers, statustext = http.request {
@@ -37,11 +42,16 @@ end
 
 -- login
 function acc.login(url, name, password)
+    if name == nil then
+        error('nom non fourni')
+    elseif password == nil then
+        error('mot de passe non fourni')
+    end
     local urlString = url.."/acc/login"
     local req = json.encode({name = name, password = password})
     local res = {}
-    local id = 'nil'
-    local token = 'nil'
+    local id = nil
+    local token = nil
     local body = {}
 
     local result, statuscode, headers, statustext = http.request {
@@ -71,11 +81,16 @@ end
 
 --afficher un compte
 function acc.showOne(url, tokenSess, idToShow)
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif idToShow == nil then
+        error('id non fourni')
+    end
     local urlString = url.."/acc/"..idToShow
     local req = json.encode({token = tokenSess})
     local res = {}
-    local name = 'nil'
-    local role = 'nil'
+    local name = nil
+    local role = nil
     local body = {}
 
     local result, statuscode, headers, statustext = http.request {
@@ -101,6 +116,9 @@ end
 
 --afficher tout les comptes
 function acc.showAll(url, tokenSess)
+    if tokenSess == nil then
+        error('token non fourni')
+    end
     local urlString = url.."/acc/"
 
     local req = json.encode({token = tokenSess})
@@ -128,6 +146,11 @@ end
 
 -- modifier un compte
 function acc.modify(url,tokenSess, idToChange, newName, newPassword, newRole)
+    if tokenSess == nil then
+        error('token non fourni')
+    elseif idToChange == nil then
+        error('id non fourni')
+    end
     local modifyString = {token = tokenSess};
     if newName then
         modifyString.name = newName;
@@ -160,13 +183,13 @@ end
 
 -- supprimer le compte
 function acc.del(url, idToDel, tokenSess, idSess)
-    if idToDel == 'nil' then
+    if idToDel == nil then
         error('id du compte a supprimer non fournie')
 
-    elseif tokenSess == 'nil' then
+    elseif tokenSess == nil then
         error('token null')
 
-    elseif idSess == 'nil' then
+    elseif idSess == nil then
         error('id du compte actif non fournie')
     else
 
