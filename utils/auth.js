@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const AccBook = require('../models/acc-book');
 
 const Account = require('../models/account');
 const Pi = require('../models/pi');
+const AccBook = require('../models/acc-book');
 
 
 exports.isProp = (token, idToTest) => {

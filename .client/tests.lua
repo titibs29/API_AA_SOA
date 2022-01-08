@@ -4,9 +4,6 @@ package.path = package.path..';./.client/libs/lua/?.lua;./.client/?.lua'
 package.cpath = package.cpath..';./.client/libs/socket/?.dll;./libs/mime/?.dll'
 
 local http = require 'socket.http'
-local mime = require 'mime'
-local ltn12 = require 'ltn12'
-local json = require 'json'
 local acc = require 'acc'
 local store = require 'store'
 local pi = require 'pi'
@@ -42,7 +39,6 @@ local lu = require('luaunit')
 TestBegin = {}
 
     function TestBegin:setup()
-
     end
 
     -- simple test de connexion
@@ -72,7 +68,6 @@ TestBegin = {}
 TestAccount = {}
 
     function TestAccount:setUp()
-
     end
 
 
@@ -326,6 +321,7 @@ TestStore = {}
 TestPi = {}
 
     function TestPi:setup()
+
     end
 
     -- rappel : client 1 est artisan
@@ -468,8 +464,8 @@ TestPi = {}
 --#region booking
 TestBooking = {}
 
-    function TestBooking:setup()
-        
+    function TestBooking:init()
+
     end
 
     -- creer une reservation
@@ -597,6 +593,7 @@ TestBooking = {}
         lu.assertEquals(status, 200)
     end
 --#endregion
+
 
 -- suppression de compte
 function test9a()

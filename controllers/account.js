@@ -5,8 +5,6 @@ const auth = require('../utils/auth');
 
 const Account = require('../models/account');
 const AccBook = require('../models/acc-book');
-const { reject } = require('bcrypt/promises');
-
 
 // login
 exports.login = (req, res, next) => {
