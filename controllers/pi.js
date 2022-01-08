@@ -6,7 +6,10 @@ const auth = require('../utils/auth');
 
 // affiche un pi
 exports.showOne = (req, res, next) => {
-
+    try{
+    if ( !/[0-9a-f]{12}/g.test(req.params.id)){
+        throw "BadIdFormat"
+    }
     Pi.findOne({ _id: req.params.id })
         .then(pi => {
             if (pi) {
@@ -19,6 +22,14 @@ exports.showOne = (req, res, next) => {
             console.error(error);
             res.sendStatus(500);
         });
+    }
+    catch{
+    if(error == "BadIdFormat"){
+        res.status(400).json({ error });
+    } else {
+        res.sendStatus(500);
+    }
+}
 };
 
 // crée un  pi
@@ -93,6 +104,9 @@ exports.modify = (req, res, next) => {
         if (!req.body.token) {
             throw "NoToken"
         }
+        if ( !/[0-9a-f]{12}/g.test(req.params.id)){
+            throw "BadIdFormat"
+        }
         const token = req.body.token;
         const id = req.params.id;
 
@@ -145,6 +159,8 @@ exports.modify = (req, res, next) => {
             res.status(401).json({ error });
         } else if (error == "NoToken") {
             res.status(401).json({ error });
+        } else if(error == "BadIdFormat"){
+            res.status(400).json({ error });
         } else {
             res.sendStatus(500);
         }
@@ -157,6 +173,9 @@ exports.del = (req, res, next) => {
     try {
         if (!req.body.token) {
             throw "NoToken"
+        }
+        if ( !/[0-9a-f]{12}/g.test(req.params.id)){
+            throw "BadIdFormat"
         }
         const token = req.body.token;
         const id = req.params.id
@@ -199,6 +218,8 @@ exports.del = (req, res, next) => {
         console.error(error)
         if (error == "NoToken") {
             res.status(401).json({ error });
+        } else if(error == "BadIdFormat"){
+            res.status(400).json({ error });
         } else {
             res.sendStatus(500);
         }

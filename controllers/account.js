@@ -110,7 +110,9 @@ exports.showOne = (req, res) => {
         if (!req.body.token) {
             throw "NoToken"
         }
-
+        if ( !/[0-9a-f]{12}/g.test(req.params.id)){
+            throw "BadIdFormat"
+        }
         const token = req.body.token;
         const id = req.params.id;
 
@@ -150,6 +152,8 @@ exports.showOne = (req, res) => {
         console.error(error)
         if (error == "NoToken") {
             res.status(401).json({ error });
+        } else if(error == "BadIdFormat"){
+            res.status(400).json({ error });
         } else {
             res.sendStatus(500);
         }
@@ -162,6 +166,9 @@ exports.modify = (req, res, next) => {
     try {
         if (!req.body.token) {
             throw "NoToken"
+        }
+        if ( !/[0-9a-f]{12}/g.test(req.params.id)){
+            throw "BadIdFormat"
         }
         const token = req.body.token;
         delete req.body.token;
@@ -230,6 +237,8 @@ exports.modify = (req, res, next) => {
             res.status(401).json({ error });
         } else if (error == "NoToken") {
             res.status(401).json({ error });
+        } else if(error == "BadIdFormat"){
+            res.status(400).json({ error });
         } else {
             res.sendStatus(500);
         }
@@ -242,6 +251,9 @@ exports.del = (req, res, next) => {
     try {
         if (!req.body.token) {
             throw "NoToken"
+        }
+        if ( !/[0-9a-f]{12}/g.test(req.params.id)){
+            throw "BadIdFormat"
         }
         const token = req.body.token;
         const idToDel = req.params.id;
@@ -298,6 +310,8 @@ exports.del = (req, res, next) => {
             res.status(401).json({ error });
         } else if (error == "NoToken") {
             res.status(401).json({ error });
+        } else if(error == "BadIdFormat"){
+            res.status(400).json({ error });
         } else {
             res.sendStatus(500);
         }

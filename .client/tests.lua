@@ -294,7 +294,7 @@ TestStore = {}
     function TestStore:test4c() -- un mauvais article
         local status = nil;
         status = store.modify(url,tokenSessAdmin,'badArticleId',"nouvelArticle")
-        lu.assertEquals(status, 404)
+        lu.assertEquals(status, 400)
     end
 
 

@@ -10,7 +10,7 @@ exports.showOne = (req, res, next) => {
         if (!req.body.token) {
             throw "NoToken"
         }
-        if ( !/[0-9a-f]{12}/g.test(req.params.id) && !/[0-1]{24}/g.test(req.params.id)){
+        if (!/[0-9a-f]{12}/g.test(req.params.id)) {
             throw "BadIdFormat"
         }
         const token = req.body.token;
@@ -36,19 +36,19 @@ exports.showOne = (req, res, next) => {
             })
             .catch(error => {
                 if (error instanceof jwt.TokenExpiredError) {
-            res.status(401).json({ error });
-        } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(401).json({ error });
-        } else {
-                console.error(error);
-                res.sendStatus(500);
-        }
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             });
     }
     catch (error) {
-         if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
-        } else if(error == "BadIdFormat"){
+        } else if (error == "BadIdFormat") {
             res.status(400).json({ error });
         } else {
             res.sendStatus(500);
@@ -104,19 +104,21 @@ exports.create = (req, res, next) => {
             })
             .catch(error => {
                 if (error instanceof jwt.TokenExpiredError) {
-            res.status(401).json({ error });
-        } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(401).json({ error });
-        } else {
-                console.error(error);
-                res.sendStatus(500);
-        }
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             });
     }
     catch (error) {
-         if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
         } else if (error == "NoName") {
+            res.status(400).json({ error });
+        } else if (error == "BadIdFormat") {
             res.status(400).json({ error });
         } else {
             res.sendStatus(500);
@@ -131,6 +133,9 @@ exports.modify = (req, res, next) => {
         if (!req.body.token) {
             throw "NoToken"
         }
+        if (!/[0-9a-f]{12}/g.test(req.params.id)) {
+            throw "BadIdFormat"
+        }
         const token = req.body.token;
         const id = req.params.id
         delete req.body.token;
@@ -142,11 +147,11 @@ exports.modify = (req, res, next) => {
                         .then(article => {
                             if (article) {
                                 Article.updateOne({ _id: id }, { ...req.body, _id: id })
-                                .then(article => res.sendStatus(200))
-                                .catch(error => {
-                                    console.error(error);
-                                    res.sendStatus(500);
-                                });
+                                    .then(article => res.sendStatus(200))
+                                    .catch(error => {
+                                        console.error(error);
+                                        res.sendStatus(500);
+                                    });
                             } else {
                                 res.sendStatus(404)
                             }
@@ -162,18 +167,20 @@ exports.modify = (req, res, next) => {
             })
             .catch(error => {
                 if (error instanceof jwt.TokenExpiredError) {
-            res.status(401).json({ error });
-        } else if (error instanceof jwt.JsonWebTokenError) {
-            res.status(401).json({ error });
-        } else{
-                console.error(error);
-                res.sendStatus(500);
-    }
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
             });
     }
     catch (error) {
-         if (error == "NoToken") {
+        if (error == "NoToken") {
             res.status(401).json({ error });
+        } else if(error == "BadIdFormat"){
+            res.status(400).json({ error });
         } else {
             res.sendStatus(500);
         }
@@ -187,47 +194,52 @@ exports.del = (req, res, next) => {
         if (!req.body.token) {
             throw "NoToken"
         }
+        if (!/[0-9a-f]{12}/g.test(req.params.id)) {
+            throw "BadIdFormat"
+        }
         const token = req.body.token;
         const id = req.params.id
         auth.isAdmin(token)
-        .then(admin => {
-            if (admin) {
+            .then(admin => {
+                if (admin) {
 
-                Article.findOne({ _id: id })
-                    .then(article => {
-                        if (article) {
-                            Article.deleteOne({ _id: id })
-                            .then(() => res.sendStatus(200))
-                            .catch(error => {
-                                console.error(error);
-                                res.sendStatus(500);
-                            });
-                        } else {
-                            res.sendStatus(404)
-                        }
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        res.sendStatus(500);
-                    });
-            } else {
-                res.sendStatus(403);
-            }
-        })
-        .catch(error => {
-            if (error instanceof jwt.TokenExpiredError) {
-            res.status(401).json({ error });
-        }else if(error instanceof jwt.JsonWebTokenError){
-            res.status(401).json({ error });
-        }else {
-            console.error(error);
-            res.sendStatus(500);
-        }
-        });
+                    Article.findOne({ _id: id })
+                        .then(article => {
+                            if (article) {
+                                Article.deleteOne({ _id: id })
+                                    .then(() => res.sendStatus(200))
+                                    .catch(error => {
+                                        console.error(error);
+                                        res.sendStatus(500);
+                                    });
+                            } else {
+                                res.sendStatus(404)
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            res.sendStatus(500);
+                        });
+                } else {
+                    res.sendStatus(403);
+                }
+            })
+            .catch(error => {
+                if (error instanceof jwt.TokenExpiredError) {
+                    res.status(401).json({ error });
+                } else if (error instanceof jwt.JsonWebTokenError) {
+                    res.status(401).json({ error });
+                } else {
+                    console.error(error);
+                    res.sendStatus(500);
+                }
+            });
     }
     catch (error) {
         if (error == "NoToken") {
             res.status(401).json({ error });
+        } else if (error == "BadIdFormat") {
+            res.status(400).json({ error });
         } else {
             res.sendStatus(500);
         }
